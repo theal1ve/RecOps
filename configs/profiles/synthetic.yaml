@@ -1,0 +1,22 @@
+# No internet, no download: generated data, validates the code path end to end.
+data:
+  synthetic: true
+  min_item_count: 2
+timeline:
+  n_cycles: 3
+  min_history_days: 10
+evaluation:
+  max_users: 300
+candidates:
+  per_source_k: 50
+  als: {factors: 16, regularization: 0.01, iterations: 8, alpha: 5.0}
+ranker:
+  iterations: 60
+simulation:
+  drift_cycle: 1
+  bad_candidate_cycle: 2
+monitoring:
+  reference_sample: 3000
+serving:
+  snapshot_users: 30
+  latency_requests: 30

@@ -1,0 +1,11 @@
+{
+  "n_events": 46467212,
+  "n_likes": 881456,
+  "n_users": 9238,
+  "n_items": 877168,
+  "max_day": 300,
+  "day0_shift": 0,
+  "synthetic": false,
+  "subsampled_users": null,
+  "last_days": null
+}

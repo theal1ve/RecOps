@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.env
+# Data and artifacts are never committed: see scripts/ (download) and DVC (Stage 1)
+data/*
+!data/.gitkeep
+artifacts/
+mlruns/
+*.parquet
+*.pkl
+*.cbm

@@ -1,0 +1,23 @@
+# Real data, small slice: checks the whole pipeline in minutes.
+data:
+  max_users: 400
+  last_days: 70
+  min_item_count: 3
+timeline:
+  n_cycles: 3
+  min_history_days: 10
+evaluation:
+  max_users: 400
+candidates:
+  per_source_k: 50
+  als: {factors: 32, regularization: 0.01, iterations: 8, alpha: 5.0}
+ranker:
+  iterations: 100
+simulation:
+  drift_cycle: 1
+  bad_candidate_cycle: 2
+monitoring:
+  reference_sample: 5000
+serving:
+  snapshot_users: 50
+  latency_requests: 50

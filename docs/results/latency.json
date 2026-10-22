@@ -1,0 +1,12 @@
+{
+  "n_requests": 300,
+  "k": 20,
+  "p50_ms": 48.43720900021253,
+  "p95_ms": 60.78345524995257,
+  "p99_ms": 65.0221713202427,
+  "mean_ms": 49.64098984333001,
+  "throughput_rps_sequential": 20.142710728168808,
+  "fallback_ms": 3.178983999987395,
+  "fallback_source": "fallback_popularity",
+  "note": "sequential in-process TestClient; single worker; CPU of the host that ran it"
+}

@@ -1,0 +1,31 @@
+# Local stack. Training itself is designed for Kaggle; compose gives you the MLflow server
+# and (with --profile api) the API. Airflow is not wired in yet (see README, "Not done").
+services:
+  mlflow:
+    build:
+      context: .
+      args:
+        EXTRAS: tracking
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlruns/mlflow.db
+      --default-artifact-root /mlruns/artifacts
+    ports: ["5000:5000"]
+    volumes: ["mlruns:/mlruns"]
+
+  api:
+    profiles: ["api"]
+    build:
+      context: .
+      args:
+        EXTRAS: "ml,tracking,serve"
+        WITH_COMPILER: "1"
+    command: uvicorn --factory recops.serving.app:factory --host 0.0.0.0 --port 8000
+    environment:
+      RECOPS_PROFILE: full
+      RECOPS_WORKDIR: /run_data       # copy the Kaggle output (data/ + artifacts/) here
+    volumes: ["./run:/run_data"]
+    ports: ["8000:8000"]
+
+volumes:
+  mlruns:

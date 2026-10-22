@@ -1,0 +1,87 @@
+# Single source of truth for hyperparameters. Validated by recops.config.
+# Values are initial; they may be tuned on VALIDATION windows only, never on TEST.
+seed: 42
+
+paths:                       # overridden by --workdir (e.g. /kaggle/working/recops_run)
+  data_raw: data/raw
+  data_processed: data/processed
+  artifacts: artifacts
+
+data:
+  dataset_repo: yandex/yambda
+  subdir: flat/50m           # Yambda-50M: 10k users, ~47M listens (dataset card)
+  positive_min_played_pct: 50   # "Listen+": track played >= 50% (dataset card: "over 50%")
+  ts_units_per_day: 86400    # run 1 showed max timestamp ~26M ~ 300 days in SECONDS (values are
+                             # rounded to 5 s, not divided by 5); 17280 made a 'day' only 4.8 hours
+  max_users: null            # subsample users (smoke profile)
+  last_days: null            # keep only the last N days (smoke profile)
+  min_item_count: 10         # catalog = items with >= N positives in the training history
+  synthetic: false
+
+timeline:                    # all values in "days"; day 0 = first day of the processed data
+  eval_days: 7               # holdout window per cycle
+  ranker_label_days: 7       # labels window for ranker training
+  gap_days: 1                # gap between periods
+  step_days: 7               # shift between simulated weekly cycles
+  n_cycles: 5
+  test_days: 7               # final test = last N days, touched once
+  train_window_days: null    # null = expanding history
+  min_history_days: 14
+
+evaluation:
+  exclude_seen: true         # discovery task: do not recommend already-liked tracks, and
+                             # do not count repeat listens as hits
+  cold_min_history: 5        # users with fewer positives are "cold" -> popularity fallback
+  max_users: 5000
+  pop_head_frac: 0.01        # "head" = top 1% items by train popularity
+  cold_sim_frac: 0.1         # share of users used in the simulated cold-start study
+  cold_sim_events: 3         # their history is truncated to the first N positives
+
+candidates:
+  per_source_k: 100
+  pop_list_size: 3000
+  popularity: {window_days: 7}
+  itemknn: {neighbors: 50, max_items_per_user: 300}
+  als: {factors: 64, regularization: 0.01, iterations: 15, alpha: 5.0}
+
+ranker:
+  loss: YetiRank
+  iterations: 500
+  depth: 6
+  learning_rate: 0.05
+  negatives_per_positive: 10   # sampled from candidates, not from the whole catalog
+  min_negatives: 20
+  early_stopping_rounds: 50
+  valid_user_frac: 0.1
+  thread_count: -1
+
+metrics:
+  k_values: [10, 20, 50]
+  primary: "ndcg@20"           # used for the promote decision
+
+promotion:
+  min_relative_improvement: 0.01
+
+monitoring:
+  psi_warn: 0.1
+  psi_alert: 0.25
+  quality_drop_alert: 0.05     # relative drop of the primary metric vs production reference
+  psi_bins: 10
+  reference_sample: 50000
+  psi_features: [u_n_pos_7d, u_skip_rate, i_pos_7d, i_trend, als_score, pop_score]  # age-like features grow by construction -> excluded
+
+simulation:
+  drift_cycle: 2               # holdout of this cycle is the first drifted one (null = no drift)
+  drift_top_items: 2000        # popularity shuffle among the top-N items
+  bad_candidate_cycle: 4       # candidate trained on corrupted data -> must be rejected (null = off)
+
+mlflow:
+  experiment: recops-simulation
+  model_name: recops-ranker
+  alias: production
+
+serving:
+  host: 0.0.0.0
+  port: 8000
+  snapshot_users: 500
+  latency_requests: 300
